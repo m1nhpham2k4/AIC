@@ -1,17 +1,44 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from chatbot_chain import chat_with_bot
+from fastapi import FastAPI, Request, Form
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse, JSONResponse
+import google.generativeai as genai
+from pymongo.mongo_client import MongoClient
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 app = FastAPI()
+username = os.getenv('MONGODB_USERNAME')
+password = os.getenv('MONGODB_PASSWORD')
+uri = f'mongodb+srv://{username}:{password}@cluster0.s84nghm.mongodb.net/'
+client = MongoClient(uri)
 
-class ChatRequest(BaseModel):
-    message: str
-    session_id: str = "default"
+try:
+    client.admin.command('ping')
+    print('Pinged your deployment. You successfully connected to MongoDB')
+except Exception as e:
+    print(e)
 
-class ChatResponse(BaseModel):
-    response: str
+model = genai.GenerativeModel(model_name="gemini-2.5-pro")
 
-@app.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest):
-    result = chat_with_bot(req.message, session_id=req.session_id)
-    return ChatResponse(response=result)
+# Mount static folder
+app.mount('/static', StaticFiles(directory='static'), name="static")
+
+# Load templates
+templates = Jinja2Templates(directory='templates')
+
+@app.get('/', response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html",{"request": request})
+
+@app.post("/chat")
+async def chat(message: str = Form(...)):
+    try:
+        response = model.generate_content(message)
+        reply = response.text
+    except Exception as e:
+        reply = "Đã xảy ra lỗi khi gọi Gemini API."
+    
+    return JSONResponse(content={"reply": reply})
