@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chatbot Visual Question Answering</title>
-  <link rel="stylesheet" href="../static/css/style.css" />
-  <script src="../static/js/chat.js"></script>
+  <link rel="stylesheet" href="../static/css/style.css?v={{ timestamp }}" />
+  <script src="../static/js/chat.js?v={{timestamp}}"></script>
 </head>
 <body>
   <div class="layout">
@@ -18,30 +18,44 @@
           <img src="../static/images/sidebar-svgrepo-com.svg" alt="Close sidebars" />
         </button>
       </div>
+      <hr>
+      <div class="folder">
+        <button id="keyframes-btn" class="folder-header" aria-expanded="false" type="button">
+          <img src="../static/images/folder-svgrepo-com.svg" class="icon" alt="Folder icon" />
+          <span class="folder-name">Keyframes</span>
+        </button>
+         <!-- Nơi hiện subfolder -->
+        <ul id="keyframes-subfolders" class="subfolders collapsed"></ul>  
+      </div>
       <hr />
       <div class="chats">Chats</div>
     </aside>
 
     <main class="chat-section">
-      <div class="chat-history" id="chat-history">
-        <!-- Tin nhắn sẽ được thêm vào đây bằng JS -->
-      </div>
-      
-      <div class="content-area">
-        <div class="center-greeting">
-          <h1 class="greeting">What are you working on?</h1>
-        </div>
 
-        <form id="chat-form" class="input-area">
-          <div class="input-wrapper">
-             <button class="upload-btn" title="Add files or images">
-                <img src="../static/images/plus-large-svgrepo-com.svg" alt="Add photos & files" />
-            </button>
-            <input id="chat-input" type="text" placeholder="Ask anything" />
+      <div id="image-preview" class="image-preview"></div>
+      
+      <!-- Bọc toàn bộ phần chat vào div -->
+      <div id="chat-container">
+
+        <div class="chat-history" id="chat-history"></div>
+
+        <div class="content-area">
+          <div class="center-greeting">
+            <h1 class="greeting">What are you working on?</h1>
           </div>
-        </form>
-        <!-- Thêm chỗ hiển thị phản hồi -->
-        <div id="response-area" class="response-area"></div>
+
+          <form id="chat-form" class="input-area">
+            <div class="input-wrapper">
+              <button class="upload-btn" title="Add files or images">
+                <img src="../static/images/plus-large-svgrepo-com.svg" alt="Add photos & files" />
+              </button>
+              <input id="chat-input" type="text" placeholder="Ask anything" />
+            </div>
+          </form>
+
+          <div id="response-area" class="response-area"></div>
+        </div>
       </div>
     </main>
   </div>

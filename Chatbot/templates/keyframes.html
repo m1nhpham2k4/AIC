@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Keyframes - {{ subfolder }}</title>
+  <link rel="stylesheet" href="../static/css/style.css">
+  <script src="../static/js/keyframes.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>{{ subfolder }}</h3>
+      <a href="/keyframes">← Quay lại tất cả</a>
+    </aside>
+    <main class="chat-section">
+      <div id="image-preview" class="image-visible">
+        {% for url in images %}
+          <img src="{{ url }}" alt="{{ subfolder }}">
+        {% endfor %}
+      </div>
+    </main>
+</body>
+</html>

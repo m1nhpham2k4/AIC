@@ -1,0 +1,11 @@
+venv/
+app/__pycache__/
+app/*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+./.env
+Data/
+Chatbot/venv/
