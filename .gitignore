@@ -6,5 +6,6 @@ __pycache__/
 .ipynb_checkpoints/
 
 Data/
-venv/
-Keyframe/
+Chatbot/.env
+Chatbot/Keyframe
+archive
