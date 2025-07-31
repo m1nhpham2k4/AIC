@@ -1,71 +1,63 @@
 import os
-import sys
 import cv2
 import numpy as np
+from TransNetV2.inference.transnetv2 import TransNetV2
 
-# Thêm đường dẫn để import TransNetV2
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_dir, "TransNetV2", "inference"))
-
-from transnetv2 import TransNetV2
-
-
-def extract_scenes_from_video(video_path, output_root, threshold=0.5):
+def extract_keyframes_from_video(video_path, output_root):
     video_name = os.path.splitext(os.path.basename(video_path))[0]
-    output_dir = os.path.join(output_root, video_name)
-    os.makedirs(output_dir, exist_ok=True)
+    print(f"\n🟢 Đang xử lý: {video_name}")
 
-    print(f"🟢 Processing: {video_name}")
-
-    # Load model và dự đoán
+    # Load model (nên load 1 lần bên ngoài nếu xử lý nhiều video)
     model = TransNetV2()
-    single_frame_predictions, _, _ = model.predict_video(video_path)
+    _, single_frame_predictions, _ = model.predict_video(video_path)
 
-    # Xác định các frame là điểm scene boundary
-    boundaries = np.where(single_frame_predictions > threshold)[0]
-    print(f"✂️  Detected {len(boundaries)} scene boundaries")
+    # Dự đoán danh sách scene
+    scenes = model.predictions_to_scenes(single_frame_predictions)
+    print(f"🔹 Số cảnh phát hiện: {len(scenes)}")
 
-    # Mở video để trích xuất frame
+    # Tính index của keyframe (ở giữa mỗi cảnh)
+    key_frms_idx = (scenes[:, 0] + scenes[:, 1]) // 2
+    print(f"🔹 Keyframe indices: {key_frms_idx}")
+
+    # Mở video
     cap = cv2.VideoCapture(video_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    for i, frame_idx in enumerate(boundaries):
-        if frame_idx >= total_frames:
+    # Tạo folder output riêng cho video
+    output_dir = os.path.join(output_root, video_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    count_saved = 0
+    for i, frm_idx in enumerate(key_frms_idx):
+        if frm_idx >= total_frames:
+            print(f"⚠️ Bỏ qua frame {frm_idx} (vượt quá số frame)")
             continue
-        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frm_idx)
         ret, frame = cap.read()
-        if ret:
-            scene_folder = os.path.join(output_dir, f"scene_{i:03d}")
-            os.makedirs(scene_folder, exist_ok=True)
-            out_path = os.path.join(scene_folder, f"frame_{frame_idx:05d}.jpg")
-            cv2.imwrite(out_path, frame)
+        if not ret:
+            print(f"❌ Không thể đọc frame tại {frm_idx}")
+            continue
+
+        out_path = os.path.join(output_dir, f"scene_{i:03d}.jpg")
+        cv2.imwrite(out_path, frame)
+        print(f"✅ Đã lưu: {out_path}")
+        count_saved += 1
 
     cap.release()
-    print(f"✅ Done: {video_name} ({len(boundaries)} scenes)\n")
+    print(f"🟡 Tổng số keyframe đã lưu: {count_saved}")
 
+def process_all_videos_in_folder(input_folder, output_root="output_videos"):
+    os.makedirs(output_root, exist_ok=True)
 
-def batch_process_folder(video_folder, output_folder="output_frames", threshold=0.5):
-    os.makedirs(output_folder, exist_ok=True)
-
-    video_files = [f for f in os.listdir(video_folder)
-                   if f.lower().endswith(('.mp4', '.mov', '.avi', '.mkv'))]
-
-    if not video_files:
-        print("⚠️ Không tìm thấy file video nào trong thư mục:", video_folder)
-        return
+    video_files = [f for f in os.listdir(input_folder) if f.lower().endswith(('.mp4', '.avi', '.mov', '.mkv'))]
+    print(f"📁 Đã tìm thấy {len(video_files)} video trong '{input_folder}'")
 
     for video_file in video_files:
-        video_path = os.path.join(video_folder, video_file)
-        extract_scenes_from_video(video_path, output_folder, threshold)
-
+        video_path = os.path.join(input_folder, video_file)
+        extract_keyframes_from_video(video_path, output_root)
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Extract scene boundary frames using TransNetV2")
-    parser.add_argument("--video_folder", default="videos", help="Thư mục chứa video")
-    parser.add_argument("--output_folder", default="output_frames", help="Thư mục lưu ảnh output")
-    parser.add_argument("--threshold", type=float, default=0.5, help="Ngưỡng phân tách scene (0-1)")
-
-    args = parser.parse_args()
-    batch_process_folder(args.video_folder, args.output_folder, args.threshold)
+    input_folder = "videos"  # thư mục chứa các video gốc
+    output_root = "output_videos"  # nơi chứa các thư mục theo video
+    process_all_videos_in_folder(input_folder, output_root)
