@@ -7,5 +7,5 @@ __pycache__/
 
 Data/
 Chatbot/.env
-Chatbot/Keyframe
+Chatbot/Keyframe/
 archive
