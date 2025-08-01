@@ -327,7 +327,7 @@ hr {
 
 #image-preview.image-visible {
   display: grid;
-  grid-template-columns: repeat(5, 250px); /* 5 cột cố định */
+  grid-template-columns: repeat(4, 250px); /* 5 cột cố định */
   gap: 12px;
   padding: 16px;
 
@@ -355,6 +355,15 @@ hr {
   gap: 12px;
 }
 
+#image-preview img:hover {
+  transform: scale(1.04);
+  transition: transform 0.3s ease;
+}
+
+#image_infomation img:hover{
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
 
 #chat-container.hidden {
   display: none;
