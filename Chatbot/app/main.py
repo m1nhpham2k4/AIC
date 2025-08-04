@@ -44,18 +44,6 @@ async def get_keyframes_json():
 
     return {"folders": folders, "subfolders_map": subfolders_map}
 
-@app.get("/keyframes/{subfolder}", response_class=HTMLResponse)
-async def keyframes_subfolder(request: Request, subfolder: str):
-    # Truy xuất ảnh từ MongoDB GridFS (ví dụ)
-    files = fs.find({"metadata.level3": subfolder})
-    image_urls = [f"/image/{file.filename}" for file in files]
-
-    return templates.TemplateResponse("keyframes_subfolder.html", {
-        "request": request,
-        "subfolder": subfolder,
-        "images": image_urls
-    })
-
 fs = GridFS(db)
 
 @app.get("/image/{filename}")
