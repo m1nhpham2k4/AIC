@@ -7,7 +7,7 @@ from encode_and_insert import model, preprocess, qdrant, collection_name
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # 🔍 Truy vấn text
-text_query = "a beach"
+text_query = "ferry"
 tokenizer = open_clip.get_tokenizer('ViT-B-32')
 text = tokenizer([text_query]).to(device)
 
