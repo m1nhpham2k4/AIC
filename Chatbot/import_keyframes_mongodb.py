@@ -12,7 +12,7 @@ MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
 MONGODB_URI = f'mongodb+srv://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@cluster0.s84nghm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 
 client = MongoClient(MONGODB_URI)
-BASE_DIR = "Keyframes"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data_extraction"))
 
 try:
     client.admin.command("ping")

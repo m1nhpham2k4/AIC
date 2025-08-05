@@ -1,204 +1,70 @@
 {
   "Keyframes": [
     {
-      "video1": [
+      "TransNetV2": []
+    },
+    {
+      "output_videos": [
         {
-          "filename": "scene_000.jpg",
-          "file_id": "688caef4d7ea498043950aff"
+          "video1": [
+            "scene_000.jpg",
+            "scene_001.jpg",
+            "scene_002.jpg",
+            "scene_003.jpg",
+            "scene_004.jpg",
+            "scene_005.jpg",
+            "scene_006.jpg",
+            "scene_007.jpg",
+            "scene_008.jpg",
+            "scene_009.jpg",
+            "scene_010.jpg",
+            "scene_011.jpg",
+            "scene_012.jpg",
+            "scene_013.jpg",
+            "scene_014.jpg",
+            "scene_015.jpg",
+            "scene_016.jpg",
+            "scene_017.jpg",
+            "scene_018.jpg",
+            "scene_019.jpg",
+            "scene_020.jpg",
+            "scene_021.jpg",
+            "scene_022.jpg",
+            "scene_023.jpg",
+            "scene_024.jpg"
+          ]
         },
         {
-          "filename": "scene_001.jpg",
-          "file_id": "688caef5d7ea498043950b01"
-        },
-        {
-          "filename": "scene_002.jpg",
-          "file_id": "688caef5d7ea498043950b03"
-        },
-        {
-          "filename": "scene_003.jpg",
-          "file_id": "688caef6d7ea498043950b05"
-        },
-        {
-          "filename": "scene_004.jpg",
-          "file_id": "688caef6d7ea498043950b07"
-        },
-        {
-          "filename": "scene_005.jpg",
-          "file_id": "688caef6d7ea498043950b09"
-        },
-        {
-          "filename": "scene_006.jpg",
-          "file_id": "688caef7d7ea498043950b0b"
-        },
-        {
-          "filename": "scene_007.jpg",
-          "file_id": "688caef7d7ea498043950b0d"
-        },
-        {
-          "filename": "scene_008.jpg",
-          "file_id": "688caef7d7ea498043950b0f"
-        },
-        {
-          "filename": "scene_009.jpg",
-          "file_id": "688caef7d7ea498043950b11"
-        },
-        {
-          "filename": "scene_010.jpg",
-          "file_id": "688caef8d7ea498043950b13"
-        },
-        {
-          "filename": "scene_011.jpg",
-          "file_id": "688caef8d7ea498043950b15"
-        },
-        {
-          "filename": "scene_012.jpg",
-          "file_id": "688caef8d7ea498043950b17"
-        },
-        {
-          "filename": "scene_013.jpg",
-          "file_id": "688caef9d7ea498043950b19"
-        },
-        {
-          "filename": "scene_014.jpg",
-          "file_id": "688caef9d7ea498043950b1b"
-        },
-        {
-          "filename": "scene_015.jpg",
-          "file_id": "688caef9d7ea498043950b1d"
-        },
-        {
-          "filename": "scene_016.jpg",
-          "file_id": "688caef9d7ea498043950b1f"
-        },
-        {
-          "filename": "scene_017.jpg",
-          "file_id": "688caefad7ea498043950b21"
-        },
-        {
-          "filename": "scene_018.jpg",
-          "file_id": "688caefad7ea498043950b23"
-        },
-        {
-          "filename": "scene_019.jpg",
-          "file_id": "688caefad7ea498043950b25"
-        },
-        {
-          "filename": "scene_020.jpg",
-          "file_id": "688caefad7ea498043950b27"
-        },
-        {
-          "filename": "scene_021.jpg",
-          "file_id": "688caefad7ea498043950b29"
-        },
-        {
-          "filename": "scene_022.jpg",
-          "file_id": "688caefbd7ea498043950b2b"
-        },
-        {
-          "filename": "scene_023.jpg",
-          "file_id": "688caefbd7ea498043950b2d"
-        },
-        {
-          "filename": "scene_024.jpg",
-          "file_id": "688caefbd7ea498043950b2f"
+          "video2": [
+            "scene_000.jpg",
+            "scene_001.jpg",
+            "scene_002.jpg",
+            "scene_003.jpg",
+            "scene_004.jpg",
+            "scene_005.jpg",
+            "scene_006.jpg",
+            "scene_007.jpg",
+            "scene_008.jpg",
+            "scene_009.jpg",
+            "scene_010.jpg",
+            "scene_011.jpg",
+            "scene_012.jpg",
+            "scene_013.jpg",
+            "scene_014.jpg",
+            "scene_015.jpg",
+            "scene_016.jpg",
+            "scene_017.jpg",
+            "scene_018.jpg",
+            "scene_019.jpg",
+            "scene_020.jpg",
+            "scene_021.jpg",
+            "scene_022.jpg"
+          ]
         }
       ]
     },
     {
-      "video2": [
-        {
-          "filename": "scene_000.jpg",
-          "file_id": "688caefbd7ea498043950b31"
-        },
-        {
-          "filename": "scene_001.jpg",
-          "file_id": "688caefcd7ea498043950b33"
-        },
-        {
-          "filename": "scene_002.jpg",
-          "file_id": "688caefcd7ea498043950b35"
-        },
-        {
-          "filename": "scene_003.jpg",
-          "file_id": "688caefcd7ea498043950b37"
-        },
-        {
-          "filename": "scene_004.jpg",
-          "file_id": "688caefcd7ea498043950b39"
-        },
-        {
-          "filename": "scene_005.jpg",
-          "file_id": "688caefcd7ea498043950b3b"
-        },
-        {
-          "filename": "scene_006.jpg",
-          "file_id": "688caefdd7ea498043950b3d"
-        },
-        {
-          "filename": "scene_007.jpg",
-          "file_id": "688caefdd7ea498043950b3f"
-        },
-        {
-          "filename": "scene_008.jpg",
-          "file_id": "688caefdd7ea498043950b41"
-        },
-        {
-          "filename": "scene_009.jpg",
-          "file_id": "688caefdd7ea498043950b43"
-        },
-        {
-          "filename": "scene_010.jpg",
-          "file_id": "688caefdd7ea498043950b45"
-        },
-        {
-          "filename": "scene_011.jpg",
-          "file_id": "688caefed7ea498043950b47"
-        },
-        {
-          "filename": "scene_012.jpg",
-          "file_id": "688caefed7ea498043950b49"
-        },
-        {
-          "filename": "scene_013.jpg",
-          "file_id": "688caefed7ea498043950b4b"
-        },
-        {
-          "filename": "scene_014.jpg",
-          "file_id": "688caefed7ea498043950b4d"
-        },
-        {
-          "filename": "scene_015.jpg",
-          "file_id": "688caefed7ea498043950b4f"
-        },
-        {
-          "filename": "scene_016.jpg",
-          "file_id": "688caeffd7ea498043950b51"
-        },
-        {
-          "filename": "scene_017.jpg",
-          "file_id": "688caeffd7ea498043950b53"
-        },
-        {
-          "filename": "scene_018.jpg",
-          "file_id": "688caeffd7ea498043950b55"
-        },
-        {
-          "filename": "scene_019.jpg",
-          "file_id": "688caeffd7ea498043950b57"
-        },
-        {
-          "filename": "scene_020.jpg",
-          "file_id": "688caeffd7ea498043950b59"
-        },
-        {
-          "filename": "scene_021.jpg",
-          "file_id": "688caf00d7ea498043950b5b"
-        },
-        {
-          "filename": "scene_022.jpg",
-          "file_id": "688caf00d7ea498043950b5e"
-        }
-      ]
+      "videos": []
     }
   ]
 }

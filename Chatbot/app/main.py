@@ -5,12 +5,22 @@ from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from gridfs import GridFS
 from bson.objectid import ObjectId
 import io
+import torch
+import open_clip
 from routes import chat
 import os
 from pathlib import Path
 from dbs import db
 from datetime import datetime
 from io import BytesIO
+import sys
+from pathlib import Path
+
+# Lấy thư mục cha của thư mục Chatbot (tức là AIC/)
+ROOT_DIR = Path(__file__).resolve().parents[2]
+sys.path.append(str(ROOT_DIR))
+
+from Data_extraction.encode_and_insert import qdrant, collection_name, model, tokenizer, device
 
 timestamp = int(datetime.utcnow().timestamp())
 
@@ -67,3 +77,32 @@ async def get_images(subfolder: str):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+@app.get("/search")
+async def search_text(query: str, limit: int = 5):
+    try:
+        # Tokenize truy vấn
+        text = tokenizer([query]).to(device)
+
+        with torch.no_grad():
+            text_vector = model.encode_text(text).cpu().numpy()[0]
+            text_vector /= (text_vector ** 2).sum() ** 0.5  # Normalize
+
+        # Truy vấn Qdrant
+        hits = qdrant.search(
+            collection_name=collection_name,
+            query_vector=text_vector,
+            limit=limit
+        )
+
+        # Trả kết quả
+        results = []
+        for hit in hits:
+            results.append({
+                "path": hit.payload.get("path", "unknown"),
+                "score": round(hit.score, 4)
+            })
+
+        return {"query": query, "results": results}
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
