@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot Visual Question Answering</title>
+  <link rel="stylesheet" href="/app/static/css/style.css?v={{ timestamp }}" />
+  <script src="/app/static/js/chat.js?v={{ timestamp }}"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-bar">
+        <span class="logo">
+          <img src="/app/static/images/king-svgrepo-com.svg" alt="The King" />
+        </span>
+        <button class="close-btn" title="Close sidebars">
+          <img src="/app/static/images/sidebar-svgrepo-com.svg" alt="Close sidebars" />
+        </button>
+      </div>
+      <hr>
+      <div class="folder">
+        <button id="keyframes-btn" class="folder-header" aria-expanded="false" type="button">
+          <img src="/app/static/images/folder-svgrepo-com.svg" class="icon" alt="Folder icon" />
+          <span class="folder-name">Keyframes</span>
+        </button>
+        <ul id="keyframes-subfolders" class="subfolders collapsed"></ul>  
+      </div>
+      <hr />
+      <div class="chats">Chats</div>
+    </aside>
+
+    <!-- Main Chat Section -->
+    <main class="chat-section">
+      <!-- 🔼 Đã đẩy lên trên cùng -->
+      <div class="top-control-bar">
+        <input type="text" id="search-input" placeholder="Search..." class="search-input-bar" />
+
+        <div class="checkbox-bar">
+          <label><input type="checkbox" class="menu-choice" id="asr"> ASR</label>
+          <label><input type="checkbox" class="menu-choice" id="ocr"> OCR</label>
+          <label><input type="checkbox" class="menu-choice" id="open"> Open</label>
+          <label><input type="checkbox" class="menu-choice" id="eva" > Eva</label>
+          <label><input type="checkbox" class="menu-choice" id="caption"> Caption</label>
+          <label><input type="checkbox" class="menu-choice" id="next-scene"> Next scene</label>
+          <label><input type="checkbox" class="menu-choice" id="extra"> Extra</label>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

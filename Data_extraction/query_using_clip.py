@@ -25,3 +25,6 @@ hits = qdrant.search(
 print(f"\n🔍 Kết quả cho truy vấn: \"{text_query}\"\n")
 for hit in hits:
     print(f"{hit.payload['path']} (score={hit.score:.4f})")
+
+info = qdrant.get_collection(collection_name=collection_name)
+print("Vector size:", info.dict()['config']['params']['vectors'])
