@@ -6,6 +6,7 @@ import open_clip
 from torchvision import transforms
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct, VectorParams, Distance
+from pathlib import Path
 
 # 1️⃣ Load model CLIP
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -25,7 +26,7 @@ if not qdrant.collection_exists(collection_name):
     )
 
 # 3️⃣ Load ảnh & encode
-BASE_DIR = "output_videos"
+BASE_DIR = Path(__file__).resolve().parent / "output_videos"
 points = []
 
 for folder in sorted(os.listdir(BASE_DIR)):
