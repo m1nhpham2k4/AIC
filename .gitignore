@@ -5,9 +5,8 @@ __pycache__/
 *.pyd
 .ipynb_checkpoints/
 
-Data/
-Chatbot/.env
-archive
-Data_extraction/videos/
-Chatbot/Keyframes/
+
+archive/
+Data_extraction/
+Chatbot/
 Keyframes/
