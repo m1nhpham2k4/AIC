@@ -6,6 +6,8 @@ __pycache__/
 .ipynb_checkpoints/
 
 
+.env
+
 archive/
 Data_extraction/
 Chatbot/
