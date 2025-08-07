@@ -13,7 +13,7 @@ import os
 import torch
 import open_clip
 
-from app.routes import chat
+from routes import chat
 # Lấy thư mục gốc của project (thư mục chứa thư mục 'app')
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +25,9 @@ sys.path.append(str(ROOT_DIR))
 app = FastAPI()
 
 # Mount static và templates
-app.mount('/app/static', StaticFiles(directory=BASE_DIR / 'app' / 'static'), name='static')
+app.mount('/static', StaticFiles(directory=BASE_DIR / "app" / 'static'), name='static')
+app.mount('/keyframes', StaticFiles(directory=BASE_DIR / "Data_extraction" / "Keyframes_test"), name='keyframes')
+app.mount("/videos", StaticFiles(directory=BASE_DIR / "Data_extraction" / "Videos_test"), name="videos")
 templates = Jinja2Templates(directory=BASE_DIR / 'app' / 'templates')
 
 # Gắn router từ file routes/chat.py
@@ -38,3 +40,4 @@ async def home(request: Request):
         "request": request,
         "timestamp": int(datetime.utcnow().timestamp())
     })
+
