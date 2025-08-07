@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Form
 from fastapi.responses import JSONResponse
-from services.gemini_service import get_gemini_response
+from app.services.gemini_service import get_gemini_response
 
 router = APIRouter()
 

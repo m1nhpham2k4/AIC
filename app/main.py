@@ -13,7 +13,7 @@ import os
 import torch
 import open_clip
 
-from routes import chat
+from app.routes import chat
 # Lấy thư mục gốc của project (thư mục chứa thư mục 'app')
 BASE_DIR = Path(__file__).resolve().parent.parent
 
