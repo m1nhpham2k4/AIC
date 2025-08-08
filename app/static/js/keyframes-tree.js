@@ -120,7 +120,8 @@ async function showImageDetail(imageSrc, folder, subfolder) {
 
   // Gọi API kiểm tra có video không
   try {
-    const res = await fetch(`/api/video-info?folder=Videos_L01&subfolder=${subfolder}`);
+    const videoFolder = `Videos_${subfolder.split("_")[0]}`;
+    const res = await fetch(`/api/video-info?folder=${videoFolder}&subfolder=${subfolder}`);
 
     if (!res.ok) throw new Error("Không có video");
 
