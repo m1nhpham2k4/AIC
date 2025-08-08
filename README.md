@@ -1,7 +1,8 @@
 <p align="center">
   <img src="./info/banner.jpeg" width="1080">
 </p>
-# 🤖 LLM Video Retriever
+
+## 🤖 LLM Video Retriever
 
 ## 🚀 Hướng dẫn chạy project
 
