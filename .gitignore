@@ -11,6 +11,6 @@ __pycache__/
 archive/
 Data_extraction/Keyframes_test/
 Data_extraction/Videos_test/
-
+Data_extraction/Models/
 Chatbot/
 Keyframes/
