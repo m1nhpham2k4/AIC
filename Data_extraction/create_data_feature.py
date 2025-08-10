@@ -14,9 +14,9 @@ QDRANT_PATH    = r"./Qdrant/qdrant"
 QDRANT_URL     = "http://localhost:6333"
 API_KEY        = None
 
-COLLECTION     = "clip_ViT_g_14_cosine"   # 1024d + COSINE
-FEATURE_DIM    = 1024
-FEATURES_DIR   = r"./feature_Vit_G_14"    # nơi chứa các .npy
+COLLECTION     = "clip_ViT_SO400M_cosine"   # 1024d + COSINE
+FEATURE_DIM    = 1152
+FEATURES_DIR   = r"./feature_ViT_SO400M"    # nơi chứa các .npy
 VIDEO2FOLDER_JSON = r"./video2folder.json"  # {"L01_V001":"Keyframes_L01", ...}
 
 BATCH_SIZE     = 1000

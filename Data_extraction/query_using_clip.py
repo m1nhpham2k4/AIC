@@ -3,6 +3,9 @@ import os, json
 import numpy as np
 import torch, open_clip
 from PIL import Image
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.languages_translate import translate_text_GoogleTranslate
 from qdrant_client import QdrantClient
 
 QDRANT_URL = "http://localhost:6333"
@@ -14,7 +17,7 @@ DEVICE      = "cuda" if torch.cuda.is_available() else "cpu"
 TOPK        = 5
 
 # Đặt root keyframes nếu bạn muốn suy ra đường dẫn ảnh để xem trực tiếp
-ROOT_KEYFRAMES = r"/kaggle/input/keyframes-2024/Keyframes_test"  # hoặc r"D:\...\Keyframes_test"
+ROOT_KEYFRAMES = r"./keyframes-2024/Keyframes_test"  # hoặc r"D:\...\Keyframes_test"
 VIDEO2FOLDER_JSON = r"./video2folder.json"  # {"L05_V005": "Keyframes_L05", ...}
 
 # ===== Model & tokenizer =====
@@ -78,9 +81,7 @@ def query_and_show(q: str, topk: int = TOPK):
         #     display(Image.open(img_path).resize((320, 180)))
 
 if __name__ == "__main__":
-    queries = [
-        "a cat sitting on a wooden table",
-        "a red sports car on a mountain road",
-    ]
-    for q in queries:
-        query_and_show(q)
+
+    q = "a man riding a motorcycle on a highway"
+    # q = translate_text_GoogleTranslate(q, "en")  # Dịch sang tiếng Anh nếu cần
+    query_and_show(q)
