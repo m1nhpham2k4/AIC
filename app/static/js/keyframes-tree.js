@@ -1,3 +1,5 @@
+let currentItems = [];
+
 document.addEventListener("DOMContentLoaded", () => {
   const keyframesBtn = document.getElementById("keyframes-btn");
   const container = document.getElementById("keyframes-subfolders");
@@ -71,28 +73,43 @@ async function loadImages(folder, subfolder) {
   preview.innerHTML = "<p>🔄 Đang tải ảnh...</p>";
 
   try {
-    const res = await fetch(`/api/keyframes-images?folder=${folder}&subfolder=${subfolder}`);
+    const res = await fetch(`/api/keyframes-images?folder=${encodeURIComponent(folder)}&subfolder=${encodeURIComponent(subfolder)}`);
 
     if (!res.ok) {
       throw new Error(`Lỗi từ server: ${res.status} ${res.statusText}`);
     }
 
     const data = await res.json();
+    currentItems = Array.isArray(data.items) ? data.items : [];
 
     preview.innerHTML = "";
 
-    if (data.images.length === 0) {
-      preview.innerHTML = "<p>❌ Không tìm thấy ảnh nào.</p>";
+    if (!currentItems.length) {
+      const images = data.images || [];
+      if (images.length) {
+        preview.innerHTML = "<p>❌ Không tìm thấy ảnh nào.</p>";
+        return;
+      }
+      images.forEach((src) => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.classList.add("thumbnail");
+        img.addEventListener("click", () => {
+          showImageDetail({src, n:null, pts_time:null}, folder, subfolder);
+        });
+        preview.appendChild(img);
+      });
       return;
     }
 
-    data.images.forEach((src) => {
+    currentItems.forEach((it) => {
       const img = document.createElement("img");
-      img.src = src;
+      img.src = it.src;
       img.classList.add("thumbnail");
-      img.addEventListener("click", () => {
-        showImageDetail(src, folder, subfolder);  // 🟢 Gọi hàm khi click
-      });
+      if (it.n != null) img.dataset.n = String(it.n);
+      if (it.pts_time != null) img.dataset.ptsTime = String(it.pts_time);
+
+      img.addEventListener("click", () => showImageDetail(it, folder, subfolder));
       preview.appendChild(img);
     });
   } catch (err) {
@@ -101,7 +118,7 @@ async function loadImages(folder, subfolder) {
   }
 }
 
-async function showImageDetail(imageSrc, folder, subfolder) {
+async function showImageDetail(item, folder, subfolder) {
   const detailPanel = document.getElementById("image-detail");
   const previewContainer = detailPanel.querySelector(".large-preview");
   const title = document.getElementById("image-title");
@@ -119,9 +136,9 @@ async function showImageDetail(imageSrc, folder, subfolder) {
   url.textContent = "#";
 
   // Gọi API kiểm tra có video không
+  const videoFolder = `Videos_${subfolder.split("_")[0]}`;
   try {
-    const videoFolder = `Videos_${subfolder.split("_")[0]}`;
-    const res = await fetch(`/api/video-info?folder=${videoFolder}&subfolder=${subfolder}`);
+    const res = await fetch(`/api/video-info?folder=${encodeURIComponent(videoFolder)}&subfolder=${encodeURIComponent(subfolder)}`);
 
     if (!res.ok) throw new Error("Không có video");
 
@@ -129,15 +146,32 @@ async function showImageDetail(imageSrc, folder, subfolder) {
     const videoUrl = data.video_url;
 
     previewContainer.innerHTML = `
-      <video controls width="100%">
+      <video id="videoPlayer" controls width="100%">
         <source src="${videoUrl}" type="video/mp4" />
         Trình duyệt của bạn không hỗ trợ video.
       </video>
     `;
+
+    const videoEl = document.getElementById("videoPlayer");
+    await new Promise((resolve) => {
+      const onLoaded = () => { videoEl.removeEventListener('loadedmetadata', onLoaded); resolve(); };
+      videoEl.addEventListener('loadedmetadata', onLoaded, { once: true });
+      videoEl.load?.();
+    });
+
+    if (typeof item?.pts_time === "number") {
+      videoEl.currentTime = item.pts_time;
+    } else if (typeof item?.pts_time === "string" && item.pts_time.trim() !== "") {
+      const t = Number(item.pts_time);
+      if (!Number.isNaN(t)) videoEl.currentTime = t;
+    }
+
+    videoEl.play().catch(()=>{});
+
   } catch (err) {
     // ❌ Không có video → fallback về ảnh
     console.warn("Video không tồn tại. Hiển thị ảnh thay thế.");
-    previewContainer.innerHTML = `<img id="large-image" src="${imageSrc}" alt="Preview" />`;
+    previewContainer.innerHTML = `<img id="large-image" src="${item?.src}" alt="Preview" />`;
   }
 }
 

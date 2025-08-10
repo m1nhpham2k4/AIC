@@ -3,8 +3,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 
-from gridfs import GridFS
-from bson.objectid import ObjectId
 from datetime import datetime
 from pathlib import Path
 from io import BytesIO
@@ -13,7 +11,7 @@ import os
 import torch
 import open_clip
 
-from routes import chat
+from app.routes import chat
 # Lấy thư mục gốc của project (thư mục chứa thư mục 'app')
 BASE_DIR = Path(__file__).resolve().parent.parent
 
