@@ -9,7 +9,8 @@ __pycache__/
 .env
 
 archive/
-Data_extraction/
+Data_extraction/Keyframes_test/
+Data_extraction/Videos_test/
 
 Chatbot/
 Keyframes/
