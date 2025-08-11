@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chatbot Visual Question Answering</title>
+
   <link rel="stylesheet" href="/static/css/style.css?v={{ timestamp }}" />
-  <script src="/static/js/chat.js?v={{ timestamp }}"></script>
-  <script src="/static/js/keyframes-tree.js?v={{ timestamp }}"></script>
-  <script src="/static/js/sidebar-toggle.js?v={{ timestamp }}"></script>
+
+  <!-- JS: dùng defer để DOM load xong rồi mới chạy -->
+  <script src="/static/js/chat.js?v={{ timestamp }}" defer></script>
+  <script src="/static/js/keyframes-tree.js?v={{ timestamp }}" defer></script>
+  <script src="/static/js/sidebar-toggle.js?v={{ timestamp }}" defer></script>
+  <!-- Xử lý thanh search (Enter + nút bấm) -->
+  <script src="/static/js/search-bar.js?v={{ timestamp }}" defer></script>
 </head>
 <body>
   <div class="layout">
@@ -18,41 +23,55 @@
           <img src="/static/images/king-svgrepo-com.svg" alt="The King" />
         </span>
 
-        <button class="sidebar-toggle" title="Toggle sidebar">
+        <button class="sidebar-toggle" title="Toggle sidebar" type="button">
           <img src="/static/images/sidebar-svgrepo-com.svg" alt="Toggle sidebar" />
         </button>
       </div>
       <hr>
+
       <div class="folder">
         <button id="keyframes-btn" class="folder-header" aria-expanded="false" type="button">
           <img src="/static/images/folder-svgrepo-com.svg" class="icon" alt="Folder icon" />
           <span class="folder-name">Keyframes</span>
         </button>
-        <ul id="keyframes-subfolders" class="subfolders collapsed"></ul>  
+        <ul id="keyframes-subfolders" class="subfolders collapsed"></ul>
       </div>
+
       <hr />
       <div class="chats">Chats</div>
     </aside>
 
-    <!-- Main Chat Section -->
+    <!-- Main -->
     <main class="chat-section">
-      <!-- 🔼 Đã đẩy lên trên cùng -->
+      <!-- Top controls -->
       <div class="top-control-bar">
-        <input type="text" id="search-input" placeholder="Search..." class="search-input-bar" />
+        <div class="search-bar-wrap">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search..."
+            class="search-input-bar"
+            aria-label="Search keyframes"
+          />
+          <button id="search-btn" type="button" class="search-btn" aria-label="Run search">Search</button>
+        </div>
 
         <div class="checkbox-bar">
           <label><input type="checkbox" class="menu-choice" id="asr"> ASR</label>
           <label><input type="checkbox" class="menu-choice" id="ocr"> OCR</label>
           <label><input type="checkbox" class="menu-choice" id="open"> Open</label>
-          <label><input type="checkbox" class="menu-choice" id="eva" > Eva</label>
+          <label><input type="checkbox" class="menu-choice" id="eva"> Eva</label>
           <label><input type="checkbox" class="menu-choice" id="caption"> Caption</label>
           <label><input type="checkbox" class="menu-choice" id="next-scene"> Next scene</label>
           <label><input type="checkbox" class="menu-choice" id="extra"> Extra</label>
         </div>
       </div>
 
+
+      <!-- Content -->
       <div class="content-area">
         <div id="preview" class="preview-grid"></div>
+
         <div id="image-detail" class="image-detail-panel hidden">
           <div class="large-preview">
             <img id="large-image" src="" alt="Preview" />
@@ -61,10 +80,11 @@
             <h3 id="image-title">Title: -</h3>
             <p id="image-author">Author: -</p>
             <p id="image-length">Length: -</p>
-            <a id="image-url" href="#" target="_blank">Channel URL</a>
+            <a id="image-url" href="#" target="_blank" rel="noopener">Channel URL</a>
           </div>
-      </div>
+        </div>
+      </div> <!-- /content-area -->
     </main>
-  </div>
+  </div> <!-- /layout -->
 </body>
 </html>
