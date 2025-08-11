@@ -16,45 +16,50 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    container.innerHTML = `<li style="padding:6px 8px;color:#666;">🔄 Đang tải...</li>`;
+
     try {
       const res = await fetch("/api/keyframes-tree");
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const data = await res.json();
 
       container.innerHTML = "";
 
-      data.keyframes.forEach(group => {
+      (data.keyframes || []).forEach(group => {
         const parentLi = document.createElement("li");
         parentLi.classList.add("subfolder");
 
-        const folderSpan = document.createElement("span");
-        folderSpan.textContent = group.name;
-        folderSpan.classList.add("folder-toggle");
-        folderSpan.style.cursor = "pointer";
+        const folderBtn = document.createElement("button");
+        folderBtn.type = "button";
+        folderBtn.className = "folder-toggle";
+        folderBtn.textContent = group.name;
+        folderBtn.style.cursor = "pointer";
 
         const subUl = document.createElement("ul");
         subUl.classList.add("sub-subfolders");
         subUl.style.display = "none";
 
-        group.subfolders.forEach(sub => {
+        (group.subfolders || []).forEach(sub => {
           const subLi = document.createElement("li");
-          subLi.textContent = sub;
           subLi.classList.add("subfolder-item");
           subLi.style.cursor = "pointer";
 
-          // ✅ Khi click vào L01_V001 → load ảnh
-          subLi.addEventListener("click", () => {
-            loadImages(group.name, sub);
-          });
+          const subBtn = document.createElement("button");
+          subBtn.type = "button";
+          subBtn.textContent = sub;
+          subBtn.style.all = "unset";
+          subBtn.style.cursor = "pointer";
+          subBtn.addEventListener("click", () => loadImages(group.name, sub));
 
+          subLi.appendChild(subBtn);
           subUl.appendChild(subLi);
         });
 
-        // Toggle hiển thị thư mục con
-        folderSpan.addEventListener("click", () => {
+        folderBtn.addEventListener("click", () => {
           subUl.style.display = subUl.style.display === "none" ? "block" : "none";
         });
 
-        parentLi.appendChild(folderSpan);
+        parentLi.appendChild(folderBtn);
         parentLi.appendChild(subUl);
         container.appendChild(parentLi);
       });
@@ -63,82 +68,86 @@ document.addEventListener("DOMContentLoaded", () => {
       container.classList.add("expanded");
     } catch (err) {
       console.error("❌ Lỗi khi tải cây thư mục:", err);
+      container.innerHTML = `<li style="padding:6px 8px;color:#c00;">❌ Lỗi khi tải cây thư mục</li>`;
     }
   });
 });
 
-// ✅ Hàm load ảnh từ thư mục
-async function loadImages(folder, subfolder) {
+// ========================== LOAD IMAGES ==========================
+async function loadImages(folder, subfolder, offset = 0, limit = 0) {
   const preview = document.getElementById("preview");
+  if (!preview) return;
+
   preview.innerHTML = "<p>🔄 Đang tải ảnh...</p>";
 
   try {
-    const res = await fetch(`/api/keyframes-images?folder=${encodeURIComponent(folder)}&subfolder=${encodeURIComponent(subfolder)}`);
-
-    if (!res.ok) {
-      throw new Error(`Lỗi từ server: ${res.status} ${res.statusText}`);
-    }
+    const url = `/api/keyframes-images?folder=${encodeURIComponent(folder)}&subfolder=${encodeURIComponent(subfolder)}&offset=${offset}&limit=${limit}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Server trả lỗi: ${res.status} ${res.statusText}`);
 
     const data = await res.json();
+
     currentItems = Array.isArray(data.items) ? data.items : [];
+    const images = Array.isArray(data.images) ? data.images : [];
 
     preview.innerHTML = "";
 
-    if (!currentItems.length) {
-      const images = data.images || [];
-      if (images.length) {
-        preview.innerHTML = "<p>❌ Không tìm thấy ảnh nào.</p>";
-        return;
-      }
+    if (currentItems.length > 0) {
+      // Render theo items (có n, pts_time)
+      currentItems.forEach((it) => {
+        const img = document.createElement("img");
+        img.src = it.src;
+        img.classList.add("thumbnail");
+        if (it.n != null) img.dataset.n = String(it.n);
+        if (it.pts_time != null) img.dataset.ptsTime = String(it.pts_time);
+        img.addEventListener("click", () => showImageDetail(it, folder, subfolder));
+        preview.appendChild(img);
+      });
+    } else if (images.length > 0) {
+      // Fallback: render theo danh sách ảnh đơn thuần
       images.forEach((src) => {
         const img = document.createElement("img");
         img.src = src;
         img.classList.add("thumbnail");
-        img.addEventListener("click", () => {
-          showImageDetail({src, n:null, pts_time:null}, folder, subfolder);
-        });
+        img.addEventListener("click", () =>
+          showImageDetail({ src, n: null, pts_time: null }, folder, subfolder)
+        );
         preview.appendChild(img);
       });
-      return;
+    } else {
+      preview.innerHTML = "<p>❌ Không tìm thấy ảnh nào.</p>";
     }
-
-    currentItems.forEach((it) => {
-      const img = document.createElement("img");
-      img.src = it.src;
-      img.classList.add("thumbnail");
-      if (it.n != null) img.dataset.n = String(it.n);
-      if (it.pts_time != null) img.dataset.ptsTime = String(it.pts_time);
-
-      img.addEventListener("click", () => showImageDetail(it, folder, subfolder));
-      preview.appendChild(img);
-    });
   } catch (err) {
-    preview.innerHTML = "<p style='color:red;'>❌ Lỗi khi tải ảnh.</p>";
     console.error("⚠️ Lỗi khi fetch ảnh:", err);
+    preview.innerHTML = "<p style='color:red;'>❌ Lỗi khi tải ảnh.</p>";
   }
 }
 
+// ========================== DETAIL (VIDEO/ẢNH) ==========================
 async function showImageDetail(item, folder, subfolder) {
   const detailPanel = document.getElementById("image-detail");
-  const previewContainer = detailPanel.querySelector(".large-preview");
+  const previewContainer = detailPanel?.querySelector(".large-preview");
   const title = document.getElementById("image-title");
   const length = document.getElementById("image-length");
   const author = document.getElementById("image-author");
   const url = document.getElementById("image-url");
 
+  if (!detailPanel || !previewContainer) return;
+
   detailPanel.classList.remove("hidden");
 
-  // 📝 Giả lập metadata
+  // Metadata demo
   title.textContent = `Title: ${subfolder}`;
   length.textContent = "Length: ~";
   author.textContent = "Author: Unknown";
   url.href = "#";
   url.textContent = "#";
 
-  // Gọi API kiểm tra có video không
-  const videoFolder = `Videos_${subfolder.split("_")[0]}`;
+  // ⚠️ Backend /api/video-info mong đợi 'folder' chính là tên folder Keyframes_L0x
   try {
-    const res = await fetch(`/api/video-info?folder=${encodeURIComponent(videoFolder)}&subfolder=${encodeURIComponent(subfolder)}`);
+    const res = await fetch(
+      `/api/video-info?folder=${encodeURIComponent(folder)}&subfolder=${encodeURIComponent(subfolder)}`
+    );
 
     if (!res.ok) throw new Error("Không có video");
 
@@ -154,24 +163,23 @@ async function showImageDetail(item, folder, subfolder) {
 
     const videoEl = document.getElementById("videoPlayer");
     await new Promise((resolve) => {
-      const onLoaded = () => { videoEl.removeEventListener('loadedmetadata', onLoaded); resolve(); };
-      videoEl.addEventListener('loadedmetadata', onLoaded, { once: true });
+      const onLoaded = () => {
+        videoEl.removeEventListener("loadedmetadata", onLoaded);
+        resolve();
+      };
+      videoEl.addEventListener("loadedmetadata", onLoaded, { once: true });
       videoEl.load?.();
     });
 
-    if (typeof item?.pts_time === "number") {
-      videoEl.currentTime = item.pts_time;
-    } else if (typeof item?.pts_time === "string" && item.pts_time.trim() !== "") {
-      const t = Number(item.pts_time);
-      if (!Number.isNaN(t)) videoEl.currentTime = t;
+    const t = (typeof item?.pts_time === "string") ? Number(item.pts_time) : item?.pts_time;
+    if (typeof t === "number" && !Number.isNaN(t)) {
+      videoEl.currentTime = t;
     }
 
-    videoEl.play().catch(()=>{});
-
+    videoEl.play().catch(() => {});
   } catch (err) {
-    // ❌ Không có video → fallback về ảnh
-    console.warn("Video không tồn tại. Hiển thị ảnh thay thế.");
-    previewContainer.innerHTML = `<img id="large-image" src="${item?.src}" alt="Preview" />`;
+    console.warn("Video không tồn tại, hiển thị ảnh:", err);
+    const src = item?.src || "";
+    previewContainer.innerHTML = `<img id="large-image" src="${src}" alt="Preview" />`;
   }
 }
-
