@@ -9,10 +9,10 @@ from utils.languages_translate import translate_text_GoogleTranslate
 from qdrant_client import QdrantClient
 
 QDRANT_URL = "http://localhost:6333"
-COLLECTION  = "clip_ViT_SO400M_cosine"
+COLLECTION  = "clip_ViT_g_14_cosine"
 
-MODEL_NAME  = "ViT-SO400M-14-SigLIP-384"
-PRETRAINED  = "webli"
+MODEL_NAME  = "ViT-g-14"
+PRETRAINED  = "laion2b_s34b_b88k"
 DEVICE      = "cuda" if torch.cuda.is_available() else "cpu"
 TOPK        = 5
 
