@@ -1,13 +1,18 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
+
+from datetime import datetime
 from pathlib import Path
 import sys
 
-# Cấu hình thư mục
-BASE_DIR = Path(__file__).resolve().parent         # app/
-ROOT_DIR = BASE_DIR.parent                         # Dự án gốc (AIC)
+from app.routes import chat
+# Lấy thư mục gốc của project (thư mục chứa thư mục 'app')
+BASE_DIR = Path(__file__).resolve().parent
+
+# (Tùy chọn) nếu cần import từ cấp cao hơn (ví dụ thư mục 'Data_extraction' ở cùng cấp với 'AIC')
+ROOT_DIR = BASE_DIR.parent
 sys.path.append(str(ROOT_DIR))
 
 from app.routes import chat  # <-- dùng đúng kiểu import
