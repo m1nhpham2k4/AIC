@@ -1,38 +1,52 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
-
-from datetime import datetime
+from fastapi.responses import HTMLResponse
 from pathlib import Path
-import sys
+import sys, time
 
-from app.routes import chat
-# Lấy thư mục gốc của project (thư mục chứa thư mục 'app')
-BASE_DIR = Path(__file__).resolve().parent
+# Đường dẫn
+BASE_DIR = Path(__file__).resolve().parent          # app/
+ROOT_DIR = BASE_DIR.parent                          # repo gốc
 
-# (Tùy chọn) nếu cần import từ cấp cao hơn (ví dụ thư mục 'Data_extraction' ở cùng cấp với 'AIC')
-ROOT_DIR = BASE_DIR.parent
+# Cho phép import các module ngoài app/
 sys.path.append(str(ROOT_DIR))
 
-from app.routes import chat  # <-- dùng đúng kiểu import
+# Routers
+from app.routes import chat
 
-# Khởi tạo app
 app = FastAPI()
 
-# Mount static & media folders
+# CORS (tuỳ nhu cầu)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],           # thay bằng domain thật khi deploy
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-app.mount("/keyframes", StaticFiles(directory=ROOT_DIR / "Data_extraction" / "Keyframes_test"), name="keyframes")
-app.mount("/videos", StaticFiles(directory=ROOT_DIR / "Data_extraction" / "Videos_test"), name="videos")
+
+# Mount keyframes & videos (chỉ khi tồn tại)
+keyframes_dir = ROOT_DIR / "Data_extraction" / "Keyframes_test"
+videos_dir    = ROOT_DIR / "Data_extraction" / "Videos_test"
+if keyframes_dir.exists():
+    app.mount("/keyframes", StaticFiles(directory=keyframes_dir), name="keyframes")
+if videos_dir.exists():
+    app.mount("/videos", StaticFiles(directory=videos_dir), name="videos")
+
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-# Gắn router
+# Gắn router FastAPI (có /api/search, /api/preview_image, /api/keyframes-...)
 app.include_router(chat.router)
 
-# Route: Trang chủ
+# Home
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "timestamp": int(Path().stat().st_mtime)
-    })
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "timestamp": int(time.time())}
+    )

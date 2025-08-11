@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatBox = document.getElementById("chat-history");
   const greeting = document.querySelector(".center-greeting");
 
+  if (!form || !input || !chatBox) return; // tránh lỗi nếu chưa có DOM
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -24,18 +26,35 @@ document.addEventListener("DOMContentLoaded", () => {
     input.focus();
 
     try {
-      // Gửi truy vấn đến API /search
-      const res = await fetch(`/search?query=${encodeURIComponent(message)}`);
+      // Gửi truy vấn đến API mới: /api/search?q=...
+      const res = await fetch(`/api/search?q=${encodeURIComponent(message)}&topk=12`);
       const data = await res.json();
 
       const botBubble = document.createElement("div");
       botBubble.className = "bubble bot";
 
       if (data.results && data.results.length > 0) {
-        let html = `<strong>Kết quả cho "<em>${data.query}</em>":</strong><ul style="padding-left:20px;">`;
+        let html = `<strong>Kết quả cho "<em>${escapeHTML(data.query || message)}</em>":</strong>`;
+        html += `<ul style="padding-left:20px; line-height:1.6;">`;
+
         data.results.forEach(item => {
-          html += `<li>${item.path} <span style="color:gray;">(score: ${item.score})</span></li>`;
+          const score = (typeof item.score === "number")
+            ? item.score.toFixed(3)
+            : item.score ?? "-";
+
+          // nếu backend trả đường dẫn ảnh local -> hiển thị thumbnail
+          const thumb = item.image
+            ? `/api/preview_image?path=${encodeURIComponent(item.image)}`
+            : null;
+
+          html += `<li>
+            ${thumb ? `<img src="${thumb}" alt="thumb" style="height:44px;vertical-align:middle;margin-right:8px;border-radius:4px;">` : ""}
+            <code>${escapeHTML(item.video || "-")}</code>
+            &nbsp;|&nbsp; frame: <b>${item.frame_idx ?? "-"}</b>
+            &nbsp;|&nbsp; score: <span style="color:gray;">${score}</span>
+          </li>`;
         });
+
         html += "</ul>";
         botBubble.innerHTML = html;
       } else {
@@ -56,5 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function scrollToBottom() {
     chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function escapeHTML(s) {
+    return s.replace(/[&<>"']/g, (m) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+    }[m]));
   }
 });
