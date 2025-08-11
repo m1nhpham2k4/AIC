@@ -110,3 +110,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:va
   background:#2a2e35; color:#fff; cursor:pointer;
 }
 .search-btn:hover { filter:brightness(1.05); }
+.tree-root, .tree-root .tree-children { list-style: none; margin: 0; padding-left: 0; }
+.tree-children { padding-left: 16px; }
+.tree-folder { padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.tree-folder:hover { background: #f3f4f6; }
+.tree-leaf { display: block; width: 100%; text-align: left; padding: 6px 10px; border: 0; background: transparent; border-radius: 6px; }
+.tree-leaf:hover { background: #eef2ff; }
+.tree-leaf.is-active { background: #2563eb; color: #fff; }
