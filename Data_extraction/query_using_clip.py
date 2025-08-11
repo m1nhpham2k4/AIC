@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.languages_translate import translate_text_GoogleTranslate
 from qdrant_client import QdrantClient
 
-QDRANT_URL = "http://localhost:6333"
+QDRANT_URL = "https://6333-m1nhpham2k4-aic-76zktre511o.ws-us120.gitpod.io/"
 COLLECTION  = "clip_ViT_g_14_cosine"
 
 MODEL_NAME  = "ViT-g-14"
