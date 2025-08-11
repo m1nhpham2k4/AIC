@@ -19,3 +19,4 @@ qdrant_storage/
 .gitpod.yml
 .gitpod.yml
 qdrant_storage/
+frontend/node_modules/
