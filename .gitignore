@@ -15,3 +15,5 @@ Data_extraction/Models/
 Chatbot/
 Keyframes/
 Data_extraction/OCR/
+qdrant_storage/
+.gitpod.yml

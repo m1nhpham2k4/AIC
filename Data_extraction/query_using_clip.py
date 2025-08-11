@@ -9,10 +9,10 @@ from utils.languages_translate import translate_text_GoogleTranslate
 from qdrant_client import QdrantClient
 
 QDRANT_URL = "http://localhost:6333"
-COLLECTION  = "clip_ViT_g_14_cosine"
+COLLECTION  = "clip_ViT_SO400M_cosine"
 
-MODEL_NAME  = "ViT-g-14"
-PRETRAINED  = "laion2b_s34b_b88k"
+MODEL_NAME  = "ViT-SO400M-14-SigLIP-384"
+PRETRAINED  = "webli"
 DEVICE      = "cuda" if torch.cuda.is_available() else "cpu"
 TOPK        = 5
 
@@ -51,7 +51,9 @@ def image_path_from_payload(payload: dict) -> str | None:
     if not os.path.isdir(img_dir):
         return None
     jpgs = sorted([f for f in os.listdir(img_dir) if f.lower().endswith(".jpg")])
+    print(2)
     if 0 <= frame_idx < len(jpgs):
+        print(3)
         return os.path.join(img_dir, jpgs[frame_idx])
     return None
 
