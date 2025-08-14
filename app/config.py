@@ -1,6 +1,27 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-load_dotenv()
+# Tự tìm .env dù bạn chạy uvicorn ở đâu
+load_dotenv(find_dotenv())
 
-GEMINI_API_KEY= os.getenv("GEMINI_API_KEY")
+AWS_ACCESS_KEY_ID     = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET_NAME       = os.getenv("AWS_BUCKET_NAME")
+AWS_REGION            = os.getenv("AWS_REGION", "ap-southeast-1")
+# Chỉ là key path bên trong bucket, KHÔNG kèm tên bucket
+ROOT_PREFIX           = os.getenv("S3_ROOT_PREFIX", "Keyframes_test/")
+VIDEOS_ROOT_PREFIX = os.getenv("S3_VIDEOS_ROOT_PREFIX", "Videos_test/")  
+
+
+# FE dev URL để redirect "/" khi phát triển
+FRONTEND_URL          = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+# Validate sớm cho rõ lỗi
+_required = {
+    "AWS_ACCESS_KEY_ID": AWS_ACCESS_KEY_ID,
+    "AWS_SECRET_ACCESS_KEY": AWS_SECRET_ACCESS_KEY,
+    "AWS_BUCKET_NAME": AWS_BUCKET_NAME,
+}
+_missing = [k for k, v in _required.items() if not v]
+if _missing:
+    raise RuntimeError(f"Missing env: {', '.join(_missing)}. Check your .env")
