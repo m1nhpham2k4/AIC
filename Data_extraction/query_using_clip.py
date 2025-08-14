@@ -5,14 +5,14 @@ import torch, open_clip
 from PIL import Image
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from utils.languages_translate import translate_text_GoogleTranslate
+from app.utils.languages_translate import translate_text_GoogleTranslate
 from qdrant_client import QdrantClient
 
 QDRANT_URL = "https://6333-m1nhpham2k4-aic-76zktre511o.ws-us120.gitpod.io/"
-COLLECTION  = "clip_ViT_g_14_cosine"
+COLLECTION  = "clip_ViT_SO400M_cosine"
 
-MODEL_NAME  = "ViT-g-14"
-PRETRAINED  = "laion2b_s34b_b88k"
+MODEL_NAME  = "ViT-SO400M-14-SigLIP-384"
+PRETRAINED  = "webli"
 DEVICE      = "cuda" if torch.cuda.is_available() else "cpu"
 TOPK        = 5
 

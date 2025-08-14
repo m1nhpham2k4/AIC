@@ -1,54 +1,29 @@
-# app/main.py
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from pathlib import Path
-import time
+from fastapi.responses import RedirectResponse
+from app.routes.keyframes import router as keyframes_router
+from app.config import FRONTEND_URL
 
-from app.routes.chat import router as chat_router  # lấy router từ chat.py
+app = FastAPI(title="Keyframes API")
 
-app = FastAPI()
-
+# Cho phép FE gọi API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[FRONTEND_URL, "*"],  # dev thì mở *, prod thì fix domain FE
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-BASE_DIR = Path(__file__).resolve().parent      # .../AIC/app
-ROOT_DIR = BASE_DIR.parent                      # .../AIC
+# API
+app.include_router(keyframes_router)
 
-STATIC_DIR = BASE_DIR / "static"
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-else:
-    print("[WARN] Không tìm thấy static:", STATIC_DIR)
+# "/" => chuyển hướng sang Node dev (http://localhost:3000/)
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(FRONTEND_URL + "/")
 
-DATA_ROOT = ROOT_DIR / "Data_extraction"
-KEYFRAMES_DIR = DATA_ROOT / "Keyframes_test"
-VIDEOS_DIR    = DATA_ROOT / "Videos_test"
-
-if KEYFRAMES_DIR.exists():
-    app.mount("/keyframes", StaticFiles(directory=KEYFRAMES_DIR), name="keyframes")
-else:
-    print("[WARN] Không thấy:", KEYFRAMES_DIR)
-
-if VIDEOS_DIR.exists():
-    app.mount("/videos", StaticFiles(directory=VIDEOS_DIR), name="videos")
-else:
-    print("[WARN] Không thấy:", VIDEOS_DIR)
-
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
-
-app.include_router(chat_router)  # <-- gắn router Ở ĐÂY
-
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "timestamp": int(time.time())}
-    )
+# Health
+@app.get("/healthz", include_in_schema=False)
+def healthz():
+    return {"ok": True}
