@@ -250,8 +250,8 @@ export default function App() {
 
   // Load manifest & build tree
   useEffect(() => {
-    fetch('/keyframes-manifest.json?_=' + Date.now())
-      .then(res => { if (!res.ok) throw new Error('Cannot fetch keyframes-manifest.json'); return res.json(); })
+    fetch('http://localhost:8000/keyframes/manifest?_=' + Date.now())
+      .then(res => { if (!res.ok) throw new Error('Cannot fetch /api/keyframes/manifest'); return res.json(); })
       .then(json => {
         const normalized = normalizeManifestKeys(json);
         setManifest(normalized);
@@ -270,10 +270,20 @@ export default function App() {
     const { level, clip } = extractClipFromLeaf(selectedKF);
     if (!level || !clip) { setVideoUrls([]); setVideoSrc(''); setMapRows([]); return; }
 
-    const candidates = candidateVideoUrls(level, clip);
-    setVideoUrls(candidates);
-    setVideoSrc(candidates[0]);
-
+    fetch(`http://localhost:8000/keyframes/video?level=${encodeURIComponent(level)}&clip=${encodeURIComponent(clip)}&ttl=3600`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(data => {
+      const urls = Array.isArray(data?.urls) ? data.urls : [];
+      const fallback = candidateVideoUrls(level, clip);
+      const all = urls.length ? urls : fallback;
+      setVideoUrls(all);
+      setVideoSrc(all[0] || '');
+    })
+    .catch(() => {
+      const fallback = candidateVideoUrls(level, clip);
+      setVideoUrls(fallback);
+      setVideoSrc(fallback[0] || '');
+    });
     // load CSV map
     fetch(`${MAP_BASE}/Keyframes_${level}/keyframes/${encodeURIComponent(clip)}.csv`)
       .then(r => r.ok ? r.text() : Promise.reject())
