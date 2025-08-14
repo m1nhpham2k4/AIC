@@ -21,3 +21,4 @@ qdrant_storage/
 qdrant_storage/
 frontend/node_modules/
 app/.env
+Data_extraction/metadata/
