@@ -17,9 +17,6 @@ const TAGS = [
 ];
 
 /* -------------------- BASES -------------------- */
-const VIDEO_BASE = '/videos'; // junction -> Data_extraction/Videos_test
-const MAP_BASE   = '/map-keyframes';   // junction -> Data_extraction/map-keyframes
-
 /* -------------------- KEYFRAMES helpers -------------------- */
 function splitPath(p) { return (p || '').split('/').filter(Boolean); }
 
@@ -90,27 +87,11 @@ function candidateVideoUrls(level, clip) {
   if (!level || !clip) return [];
   const file = encodeURIComponent(`${clip}.mp4`);
   return [
-    `${VIDEO_BASE}/Videos_${level}%20video/video/${file}`,
-    `${VIDEO_BASE}/Videos_${level}/video/${file}`,
+    `http://localhost:8000/Videos_2025/Videos_${level}%20video/video/${file}`,
+    `http://localhost:8000/Video_2025/Videos_${level}/video/${file}`,
   ];
 }
 
-// Parse CSV map n,pts_time,fps,frame_idx
-function parseMapCsv(text) {
-  const lines = text.trim().split(/\r?\n/);
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const [n, pts_time, fps, frame_idx] = lines[i].split(',');
-    if (!n) continue;
-    rows.push({
-      n: parseInt(n, 10),
-      pts_time: parseFloat(pts_time),
-      fps: parseFloat(fps),
-      frame_idx: parseInt(frame_idx, 10),
-    });
-  }
-  return rows;
-}
 
 // Lấy chỉ số từ tên file ảnh .../001.jpg -> 1
 function keyframeIndexFromUrl(u) {
@@ -266,30 +247,35 @@ export default function App() {
 
   // Khi đổi thư mục keyframes -> đoán video + load CSV map
   useEffect(() => {
-    if (!selectedKF) { setVideoUrls([]); setVideoSrc(''); setMapRows([]); return; }
-    const { level, clip } = extractClipFromLeaf(selectedKF);
-    if (!level || !clip) { setVideoUrls([]); setVideoSrc(''); setMapRows([]); return; }
+  if (!selectedKF) { setVideoUrls([]); setVideoSrc(''); setMapRows([]); return; }
+  const { level, clip } = extractClipFromLeaf(selectedKF);
+  if (!clip) { setVideoUrls([]); setVideoSrc(''); setMapRows([]); return; }
 
+  // 1) Video URLs (cần level)
+  if (level) {
     fetch(`http://localhost:8000/keyframes/video?level=${encodeURIComponent(level)}&clip=${encodeURIComponent(clip)}&ttl=3600`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const urls = Array.isArray(data?.urls) ? data.urls : [];
+        const fallback = candidateVideoUrls(level, clip);
+        const all = urls.length ? urls : fallback;
+        setVideoUrls(all);
+        setVideoSrc(all[0] || '');
+      })
+      .catch(() => {
+        const fallback = candidateVideoUrls(level, clip);
+        setVideoUrls(fallback);
+        setVideoSrc(fallback[0] || '');
+      });
+  }
+
+  // 2) MAP CSV → JSON (KHÔNG dùng level, vì Map_keyframes phẳng)
+  fetch(`http://localhost:8000/keyframes/map?clip=${encodeURIComponent(clip)}${level ? `&level=${encodeURIComponent(level)}` : ''}`)
     .then(r => r.ok ? r.json() : Promise.reject())
-    .then(data => {
-      const urls = Array.isArray(data?.urls) ? data.urls : [];
-      const fallback = candidateVideoUrls(level, clip);
-      const all = urls.length ? urls : fallback;
-      setVideoUrls(all);
-      setVideoSrc(all[0] || '');
-    })
-    .catch(() => {
-      const fallback = candidateVideoUrls(level, clip);
-      setVideoUrls(fallback);
-      setVideoSrc(fallback[0] || '');
-    });
-    // load CSV map
-    fetch(`${MAP_BASE}/Keyframes_${level}/keyframes/${encodeURIComponent(clip)}.csv`)
-      .then(r => r.ok ? r.text() : Promise.reject())
-      .then(txt => setMapRows(parseMapCsv(txt)))
-      .catch(() => setMapRows([]));
-  }, [selectedKF]);
+    .then(data => setMapRows(data.rows || []))
+    .catch(() => setMapRows([]));
+}, [selectedKF]);
+
 
   // URL ảnh theo folder  
   const keyframeUrls = useMemo(
@@ -298,18 +284,34 @@ export default function App() {
   );
 
   // Click ảnh -> seek video theo map CSV
-  function handleThumbClick(u) {
-    setActive(u);
-    const idx = keyframeIndexFromUrl(u);
-    if (!idx) return;
-    const row = mapRows.find(r => r.n === idx);
-    if (!row || !videoRef.current) return;
+  function handleThumbClick(idx, url) {
+   setActive(url);
+   if (!videoRef.current) return;
+
+   // 1) lấy theo index (an toàn nhất vì BE đã sort theo n,pts_time)
+   let row = mapRows[idx];
+
+   // 2) fallback: nếu thiếu dòng thì thử match theo số trong tên file
+   if (!row) {
+     const nFromName = keyframeIndexFromUrl(url);
+     if (nFromName != null) {
+       row = mapRows.find(r => Number(r.n) === Number(nFromName));
+     }
+   }
+   if (!row) return;
 
     const doSeek = () => {
-      try {
-        videoRef.current.currentTime = Math.max(0, row.pts_time || 0);
-        videoRef.current.play().catch(() => {});
-      } catch {}
+       try {
+         const t = Math.max(0, Number(row.pts_time) || 0);
+         // ưu tiên fastSeek nếu có
+         if ('fastSeek' in videoRef.current) {
+           videoRef.current.fastSeek(t);
+         } else {
+           videoRef.current.currentTime = t;
+         }
+         // tuỳ ý: tự play sau khi seek
+         // videoRef.current.play().catch(() => {});
+       } catch {}
     };
 
     if (videoRef.current.readyState >= 1) doSeek();
@@ -442,9 +444,25 @@ export default function App() {
             </div>
             <div className="grid" style={{ gridTemplateColumns: `repeat(${Math.max(1, Math.min(8, cols))}, minmax(0, 1fr))` }}>
               {keyframeUrls.map((u, idx) => (
-                <div key={u} className={`card ${active === u ? 'active' : ''}`} onClick={() => handleThumbClick(u)} title={u}>
+                <div key={u} className={`card ${active === u ? 'active' : ''}`} onClick={() => handleThumbClick(idx, u)} title={u}>
                   <div className="thumb" style={{ paddingTop: '56%', position: 'relative', overflow: 'hidden' }}>
                     <img src={u} alt="" loading="lazy" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                    {mapRows[idx] && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          right: 6,
+                          bottom: 6,
+                          background: 'rgba(0,0,0,.6)',
+                          color: '#fff',
+                          fontSize: 12,
+                          padding: '2px 6px',
+                          borderRadius: 6
+                        }}
+                      >
+                        {Number(mapRows[idx].pts_time || 0).toFixed(2)}s
+                      </div>
+                    )}
                   </div>
                   <div className="meta">
                     <span className="id">#{idx+1}</span>

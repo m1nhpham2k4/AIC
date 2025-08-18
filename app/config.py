@@ -8,11 +8,11 @@ AWS_ACCESS_KEY_ID     = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_BUCKET_NAME       = os.getenv("AWS_BUCKET_NAME")
 AWS_REGION            = os.getenv("AWS_REGION", "ap-southeast-1")
-# Chỉ là key path bên trong bucket, KHÔNG kèm tên bucket
-ROOT_PREFIX           = os.getenv("S3_ROOT_PREFIX", "Keyframes_test/")
+
+ROOT_PREFIX           = os.getenv("S3_ROOT_PREFIX")
 VIDEOS_ROOT_PREFIX = os.getenv("S3_VIDEOS_ROOT_PREFIX", "Videos_test/")  
 
-
+print(f"Using S3 root prefix config: {ROOT_PREFIX}")
 # FE dev URL để redirect "/" khi phát triển
 FRONTEND_URL          = os.getenv("FRONTEND_URL", "http://localhost:3000")
 

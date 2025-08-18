@@ -4,9 +4,11 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 from app.config import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BUCKET_NAME, AWS_REGION, ROOT_PREFIX, VIDEOS_ROOT_PREFIX
 from botocore.exceptions import ClientError
+import csv, io
+
 
 router = APIRouter(prefix="/keyframes", tags=["keyframes"])
-
+print(f"Using S3 root prefix hehe: {ROOT_PREFIX}")
 s3 = boto3.client(
     "s3",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -170,3 +172,143 @@ def get_video(
         return {"level": level, "clip": clip, "urls": urls}
     except Exception as e:
         raise HTTPException(500, str(e))
+    
+@router.get("/map")
+def get_map(
+    clip: str = Query(..., description="VD: L01_V001"),
+    level: Optional[str] = Query(None, description="VD: L01 (tuỳ chọn, fallback)"),
+):
+    """
+    Trả JSON rows [{n, pts_time, fps, frame_idx}, ...] đọc từ S3.
+    Ưu tiên: map-keyframes/{clip}.csv
+    Fallback cũ: map-keyframes/Keyframes_{level}/keyframes/{clip}.csv
+    """
+    candidates = [f"map-keyframes/{clip}.csv"]
+    if level:
+        candidates.append(f"map-keyframes/Keyframes_{level}/keyframes/{clip}.csv")
+
+    last_err = None
+    for key in candidates:
+        try:
+            obj = s3.get_object(Bucket=AWS_BUCKET_NAME, Key=key)
+            body = obj["Body"].read().decode("utf-8")
+            rows = []
+            rdr = csv.DictReader(io.StringIO(body))
+            for r in rdr:
+                rows.append({
+                    "n": int(float(r.get("n", 0) or 0)),
+                    "pts_time": float(r.get("pts_time", 0) or 0),
+                    "fps": int(float(r.get("fps", 0) or 0)),
+                    "frame_idx": int(float(r.get("frame_idx", 0) or 0)),
+                })
+            # chuẩn hoá và sort để khớp thứ tự thumbnails
+            rows.sort(key=lambda x: (x["n"], x["pts_time"]))
+            return {"clip": clip, "level": level, "key": key, "count": len(rows), "rows": rows}
+        except ClientError as e:
+            last_err = e
+            continue
+
+    # không tìm thấy ở cả 2 layout
+    msg = f"Không tìm thấy CSV map cho clip={clip}"
+    if level: msg += f" (đã thử với level={level})"
+    raise HTTPException(404, msg)
+
+def _join(*parts: str) -> str:
+    return "/".join(p.strip("/").replace("\\", "/") for p in parts if p is not None and p != "")
+
+def _exists(key: str) -> bool:
+    try:
+        s3.head_object(Bucket=AWS_BUCKET_NAME, Key=key)
+        return True
+    except ClientError as e:
+        code = e.response.get("Error", {}).get("Code")
+        if code in ("404", "NoSuchKey"):
+            return False
+        raise
+
+def _list(prefix: str):
+    keys, token = [], None
+    while True:
+        params = dict(Bucket=AWS_BUCKET_NAME, Prefix=prefix)
+        if token:
+            params["ContinuationToken"] = token
+        resp = s3.list_objects_v2(**params)
+        for obj in resp.get("Contents", []):
+            k = obj.get("Key")
+            if k:
+                keys.append(k)
+        if not resp.get("IsTruncated"):
+            break
+        token = resp.get("NextContinuationToken")
+    return keys
+
+def _find_map_key(clip: str, level: Optional[str]) -> Optional[str]:
+    """
+    Trả về key CSV đầu tiên tìm thấy cho clip. Thử theo các layout:
+      1) ROOT_PREFIX/Map_keyframes/{clip}.csv
+      2) Map_keyframes/{clip}.csv
+      3) ROOT_PREFIX/Map_keyframes/Keyframes_{level}/keyframes/{clip}.csv
+      4) Map_keyframes/Keyframes_{level}/keyframes/{clip}.csv
+    Nếu vẫn không thấy: cuối cùng list(prefix='.../Map_keyframes/') và tìm gần đúng.
+    """
+    bases = []
+    if ROOT_PREFIX:
+        bases.append(_join(ROOT_PREFIX, "map-keyframes"))
+    bases.append("map-keyframes")
+
+    candidates = []
+    for base in bases:
+        candidates.append(_join(base, f"{clip}.csv"))
+        if level:
+            candidates.append(_join(base, f"Keyframes_{level}", "keyframes", f"{clip}.csv"))
+
+    # thử head_object trước
+    for k in candidates:
+        if _exists(k):
+            return k
+
+    # fallback: liệt kê và tìm gần đúng (phòng khi khác hoa/thường)
+    for base in bases:
+        all_keys = _list(_join(base) + "/")
+        # ưu tiên khớp đuôi .../{clip}.csv
+        for k in all_keys:
+            if k.lower().endswith(f"/{clip.lower()}.csv") or k.lower().endswith(f"{clip.lower()}.csv"):
+                return k
+    return None
+
+@router.get("/map")
+def get_map(
+    clip: str = Query(..., description="VD: L01_V001"),
+    level: Optional[str] = Query(None, description="VD: L01 (tuỳ chọn)"),
+):
+    key = _find_map_key(clip, level)
+    if not key:
+        raise HTTPException(404, f"Không tìm thấy CSV map cho clip={clip}. Kiểm tra Map_keyframes/ trên S3.")
+
+    try:
+        obj = s3.get_object(Bucket=AWS_BUCKET_NAME, Key=key)
+        body = obj["Body"].read().decode("utf-8", errors="ignore")
+        rows = []
+        rdr = csv.DictReader(io.StringIO(body))
+        for r in rdr:
+            rows.append({
+                "n": int(float(r.get("n", 0) or 0)),
+                "pts_time": float(r.get("pts_time", 0) or 0),
+                "fps": int(float(r.get("fps", 0) or 0)),
+                "frame_idx": int(float(r.get("frame_idx", 0) or 0)),
+            })
+        rows.sort(key=lambda x: (x["n"], x["pts_time"]))
+        return {"clip": clip, "level": level, "s3_key": key, "count": len(rows), "rows": rows}
+    except ClientError as e:
+        raise HTTPException(500, f"S3 error: {e}")
+
+@router.get("/debug/map-list")
+def debug_map_list():
+    bases = []
+    if ROOT_PREFIX:
+        bases.append(_join(ROOT_PREFIX, "map-keyframes"))
+    bases.append("map-keyframes")
+    out = {}
+    for b in bases:
+        out[b] = _list(_join(b) + "/")
+    return out

@@ -4,14 +4,7 @@ import boto3
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 from app.config import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BUCKET_NAME, AWS_REGION, ROOT_PREFIX
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
-AWS_REGION = os.getenv("AWS_REGION", "ap-southeast-1")
-
-# ví dụ: data2025aic/Keyframes_test/
-ROOT_PREFIX = os.getenv("S3_ROOT_PREFIX", "Keyframes_test/")
-
+print(f"Using S3 root prefix_load: {ROOT_PREFIX}")
 router = APIRouter(tags=["keyframes"])
 
 s3 = boto3.client(
