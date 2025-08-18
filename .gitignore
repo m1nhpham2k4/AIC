@@ -18,3 +18,5 @@ app/.env
 frontend/.env
 Data_extraction/metadata/
 Data_extraction/features/
+features/
+
