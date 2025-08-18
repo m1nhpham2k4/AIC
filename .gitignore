@@ -8,18 +8,12 @@ __pycache__/
 
 .env
 
-archive/
-Data_extraction/Keyframes_test/
-Data_extraction/Videos_test/
-Data_extraction/Models/
-Chatbot/
-Keyframes/
+Data_extraction/Keyframes_2025/
 Data_extraction/OCR/
 qdrant_storage/
 .gitpod.yml
 .gitpod.yml
-qdrant_storage/
 frontend/node_modules/
 app/.env
-Data_extraction/metadata/
 frontend/.env
+Data_extraction/metadata/
