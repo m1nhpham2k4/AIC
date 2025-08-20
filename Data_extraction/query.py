@@ -29,29 +29,27 @@ CTX_LEN = int(model.text.positional_embedding.shape[0])
 tokenizer = open_clip.get_tokenizer(MODEL_NAME)
 
 # Lấy context length thật từ model (SigLIP2 thường = 64)
-CTX_LEN = int(model.text.positional_embedding.shape[0])
+# CTX_LEN = int(model.text.positional_embedding.shape[0])
 
-def tokenize_texts(texts):
-    import torch, open_clip
-    # Dùng trực tiếp open_clip.tokenize (chuẩn cho open-clip)
-    try:
-        toks = open_clip.tokenize(texts, context_length=CTX_LEN, truncate=True)
-    except TypeError:
-        # Fallback cho bản open-clip cũ không có 'truncate'
-        toks = open_clip.tokenize(texts, context_length=CTX_LEN)
-        # đảm bảo đúng [B, CTX_LEN]
-        if toks.shape[1] > CTX_LEN:
-            toks = toks[:, :CTX_LEN]
-        elif toks.shape[1] < CTX_LEN:
-            pad = torch.zeros((toks.shape[0], CTX_LEN - toks.shape[1]), dtype=toks.dtype)
-            toks = torch.cat([toks, pad], dim=1)
-    return toks
+# def tokenize_texts(texts):
+#     try:
+#         toks = open_clip.tokenize(texts, context_length=CTX_LEN, truncate=True)
+#     except TypeError:
+#         # Fallback cho bản open-clip cũ không có 'truncate'
+#         toks = open_clip.tokenize(texts, context_length=CTX_LEN)
+#         # đảm bảo đúng [B, CTX_LEN]
+#         if toks.shape[1] > CTX_LEN:
+#             toks = toks[:, :CTX_LEN]
+#         elif toks.shape[1] < CTX_LEN:
+#             pad = torch.zeros((toks.shape[0], CTX_LEN - toks.shape[1]), dtype=toks.dtype)
+#             toks = torch.cat([toks, pad], dim=1)
+#     return toks
 
 
 
 @torch.no_grad()
 def embed_text(texts):
-    toks = tokenize_texts(texts).to(DEVICE)
+    toks = tokenizer(texts).to(DEVICE)
     feats = model.encode_text(toks).float()
     if USE_COSINE:
         feats = F.normalize(feats, dim=-1)
@@ -68,12 +66,14 @@ def embed_images(images):
 # ==== load FAISS + DB ====
 index = faiss.read_index(INDEX_PATH)
 # tăng recall nếu cần
-faiss.ParameterSpace().set_index_parameter(index, "nprobe", 32)
+faiss.ParameterSpace().set_index_parameter(index, "nprobe", 256)
 
 conn = sqlite3.connect(SQLITE_DB)
 
 def search_vec(vec, k=10):
     D, I = index.search(vec, k)
+    # print(f"D {D}")
+    # print(f"I {I}")
     out = []
     for s, idx in zip(D[0].tolist(), I[0].tolist()):
         if idx == -1: continue
