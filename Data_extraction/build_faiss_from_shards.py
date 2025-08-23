@@ -76,7 +76,7 @@ def build_index(args):
     print(f"Sampling {train_sz} vectors for training…")
     # lấy mẫu đều từ các shard
     need = train_sz
-    sample = np.empty((0, D), dtype="float16")
+    sample = np.empty((0, D), dtype="float32")
     for npy, _, _ in shards:
         if need <= 0: break
         X = np.load(npy, mmap_mode="r")
@@ -84,7 +84,7 @@ def build_index(args):
         take_idx = np.arange(0, X.shape[0], step, dtype=int)
         if take_idx.size > need:
             take_idx = take_idx[:need]
-        blk = np.asarray(X[take_idx], dtype="float16", order="C")
+        blk = np.asarray(X[take_idx], dtype="float32", order="C")
         sample = np.vstack([sample, blk])
         need -= blk.shape[0]
 
@@ -104,7 +104,7 @@ def build_index(args):
         ids = np.arange(id_offset, id_offset + n, dtype=np.int64)
         for s in tqdm(range(0, n, batch), desc=os.path.basename(npy)):
             e = min(s + batch, n)
-            xb = np.asarray(X[s:e], dtype="float16", order="C")
+            xb = np.asarray(X[s:e], dtype="float32", order="C")
             if args.use_cosine:
                 faiss.normalize_L2(xb)
             index.add_with_ids(xb, ids[s:e])
@@ -142,9 +142,9 @@ def build_index(args):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--data-dir", required=True, help="Thư mục chứa *.npy và *.paths.txt")
-    ap.add_argument("--index-out", default="index.faiss")
+    ap.add_argument("--index-out", default="index.faiss")   
     ap.add_argument("--sqlite-db", default="meta.db")
-    ap.add_argument("--batch", type=int, default=100_000)
+    ap.add_argument("--batch", type=int, default=10_000)
     ap.add_argument("--use-cosine", action="store_true", help="Dùng cosine (normalize + Inner Product)")
     ap.add_argument("--ivf-flat", action="store_true", help="Dùng IVF-Flat (không PQ)")
     args = ap.parse_args()
