@@ -6,7 +6,7 @@ import open_clip
 import torch
 import numpy as np
 import faiss
-from app.utils.languages_translate import translate_text_GoogleTranslate
+# from app.utils.languages_translate import translate_text_GoogleTranslate
 
 
 class FaissSearch:
@@ -27,15 +27,19 @@ class FaissSearch:
             pass
 
         # --- device / openclip ---
+        print(0)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.is_open_clip = is_open_clip
+        print(is_open_clip)
         if is_open_clip:
+            print("((()))")
             self.open_clip_model, _, self.preprocess = open_clip.create_model_and_transforms(
                 model_name="ViT-SO400M-16-SigLIP2-384",
                 pretrained="webli",
                 device=self.device
             )
-            self.open_clip_model.eval()
+            # self.open_clip_model.eval()
+            print("*")
             self.open_clip_tokenizer = open_clip.get_tokenizer("ViT-SO400M-16-SigLIP2-384")
 
         # --- SQLite ---
@@ -50,12 +54,9 @@ class FaissSearch:
         Encode text bằng OpenCLIP và search trên FAISS index đã nạp trong __init__.
         Trả về list dict {id, score, path, payload}.
         """
-        if not self.is_open_clip:
-            raise RuntimeError("OpenCLIP is disabled. Init with is_open_clip=True.")
-
-        text = translate_text_GoogleTranslate(text, "en")
-        tokens = self.open_clip_tokenizer([text]).to(self.device)
-
+        # text = translate_text_GoogleTranslate(text, "en")
+        tokens = self.open_clip_tokenizer(text).to(self.device)
+        print(1)
         with torch.no_grad():
             text_features = self.open_clip_model.encode_text(tokens)
 
@@ -64,7 +65,7 @@ class FaissSearch:
 
         index = self.faiss_bin
         D, I = index.search(vec, k)
-
+        print(2)
         return self._lookup_rows(I[0].tolist(), D[0].tolist(), dbsqlite=self.sqlite_path)
 
     def _lookup_rows(self, indices, scores, dbsqlite=None):
@@ -129,5 +130,6 @@ if __name__ == "__main__":
     search = FaissSearch(path, is_open_clip=True)
 
     result = search.text_search_open_clip("a man sitting on a motorbike", k=5)
+    
     for r in result:
         print(r["score"], r["path"])
