@@ -21,3 +21,4 @@ Data_extraction/features/
 Data_extraction/index.faiss
 Data_extraction/meta.db
 Data_extraction/feature_new/
+Data_extraction/feature/
