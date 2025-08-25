@@ -26,6 +26,4 @@ Data_extraction/features_siglip2/
 Data_extraction/faiss_clip_14.bin
 Data_extraction/faiss_clip.bin
 faiss_clip.bin
-
-faiss_clip.bin
-Data_extraction/faiss_clip.bin
+Data_extraction/feature_gopt_16/
